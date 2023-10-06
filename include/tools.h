@@ -5,8 +5,6 @@
 #ifndef __TOOLS_H__
 #define __TOOLS_H__
 
-namespace tools
-{
-}  // namespace tools
+namespace tools {} // namespace tools
 
 #endif

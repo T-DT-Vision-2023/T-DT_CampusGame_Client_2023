@@ -5,21 +5,18 @@
 #ifndef ZMQ_CLIENT_H
 #define ZMQ_CLIENT_H
 
-#include <zmq.hpp>
 #include <string>
+#include <zmq.hpp>
 
-namespace tools
-{
-namespace network
-{
+namespace tools {
+namespace network {
 
-class ZMQClient
-{
+class ZMQClient {
 public:
-  ZMQClient(const std::string& server_address);
+  ZMQClient(const std::string &server_address);
   ~ZMQClient();
 
-  void send(const std::string& message);
+  void send(const std::string &message);
   std::string receive();
 
 private:
@@ -27,7 +24,7 @@ private:
   zmq::socket_t socket;
 };
 
-}  // namespace network
-}  // namespace tools
+} // namespace network
+} // namespace tools
 
 #endif

@@ -13,8 +13,8 @@ namespace network {
 
 class JSONSerializer {
 public:
-    static std::string serialize(const Json::Value& data);
-    static Json::Value deserialize(const std::string& json_string);
+  static std::string serialize(const Json::Value &data);
+  static Json::Value deserialize(const std::string &json_string);
 };
 
 } // namespace network
