@@ -12,7 +12,7 @@ set(SOURCES
     main.cpp
 )
 
-add_executable(GameClient-Demo ${SOURCES})
+add_executable(GameClient ${SOURCES})
 
 link_directories(${CMAKE_SOURCE_DIR}/libs)
 target_link_libraries(GameClient

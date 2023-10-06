@@ -1,3 +1,7 @@
+/*************************
+ * @note 请不要直接使用本头文件内的资源
+ * @note 请通过NetworkManager.h中的NetworkManager类来使用本头文件内的资源
+ */
 #ifndef JSON_SERIALIZER_H
 #define JSON_SERIALIZER_H
 
