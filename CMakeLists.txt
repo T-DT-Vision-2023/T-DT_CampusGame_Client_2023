@@ -7,33 +7,26 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # 添加项目的头文件目录
-include_directories(${CMAKE_SOURCE_DIR}/include)
+set(INCLUDE_DIR ${CMAKE_SOURCE_DIR}/include)
 
-# 添加项目的源文件
-set(SOURCES
-    src/base64.cpp
-    src/json_serializer.cpp
-    src/NetworkManager.cpp
-    src/tools.cpp
-    src/zmq_client.cpp
-    main.cpp
-)
+# 自动收集 src 目录下的所有源文件
+file(GLOB SOURCES_DIR "src/*.cpp")
 
 # 创建可执行文件
-add_executable(GameClient ${SOURCES})
+add_executable(GameClient ${SOURCES_DIR})
 
-# 指定链接库的位置
-link_directories(${CMAKE_SOURCE_DIR}/libs)
+# 设置头文件目录
+target_include_directories(GameClient PRIVATE ${INCLUDE_DIR})
 
-# 链接所需的库
+# 寻找所需的库
+find_package(jsoncpp REQUIRED)
+find_package(OpenCV REQUIRED)
+
+set(ZMQ_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu/libzmq.so")
+
 target_link_libraries(GameClient
-    libs/libjsoncpp.dll
-    libjsoncpp.so
-    libs/libjsoncpp.so.1.9.5
-    libs/libjsoncpp.so.25
-    libzmq.so
-    libopencv_core.so.4.5.4d
-    libopencv_highgui.so.4.5.4d
-    libopencv_imgcodecs.so.4.5.4d
-    libopencv_imgproc.so.4.5.4d
+    jsoncpp_lib
+    ${ZMQ_LIBRARY_PATH}
+    ${OpenCV_LIBS}
 )
+

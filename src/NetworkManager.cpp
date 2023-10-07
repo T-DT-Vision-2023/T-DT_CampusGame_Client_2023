@@ -1,5 +1,3 @@
-// NetworkManager.cpp
-
 #include "NetworkManager.h"
 #include <iostream>
 #include <thread>

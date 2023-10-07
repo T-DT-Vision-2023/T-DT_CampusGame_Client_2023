@@ -25,7 +25,6 @@ struct RecvStruct {
   double pitch;                 // 目标位置欧拉角pitch值
   int    shoot;                 // 开火状态 0->不开火 1->1的范围内一直开火 2->跳变到2开火
   double time_stamp;            // 当前视觉程序时间戳,用于时间同步,默认-1不进行同步 单位s
-  int    move_commands;         // 移动命令，其中每个位表示一个命令
   int    required_image_width;  // 需要获得的视觉画面的宽度,默认-1不进行修改
   int    required_image_height; // 需要获得的视觉画面的高度,默认-1不进行修改
   RecvStruct(){};
