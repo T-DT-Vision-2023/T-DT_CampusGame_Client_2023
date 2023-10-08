@@ -24,7 +24,7 @@ private:
   zmq::socket_t socket;
 };
 
-} // namespace network
+} // namespace Network
 } // namespace tools
 
 #endif

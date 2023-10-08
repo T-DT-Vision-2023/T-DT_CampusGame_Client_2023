@@ -23,5 +23,5 @@ std::string ZMQClient::receive() {
                      zmq_message.size());
 }
 
-} // namespace network
+} // namespace Network
 } // namespace tools

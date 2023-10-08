@@ -1,8 +1,9 @@
 #include "NetworkManager.h"
 #include <iostream>
+#include <nlohmann/json.hpp>
 #include <thread>
 
-namespace Net {
+namespace network {
 
 NetworkManager::NetworkManager(std::string server_ip, int student_id,
                                std::string team_name, int server_port,
@@ -10,8 +11,7 @@ NetworkManager::NetworkManager(std::string server_ip, int student_id,
                                void (*error_handle)(int, std::string))
     : server_ip(server_ip), student_id(student_id), team_name(team_name),
       server_port(server_port), client_port(client_port),
-      error_handle(error_handle),
-      zmq_client("tcp://" + server_ip + ":" + std::to_string(server_port)) {
+      error_handle(error_handle), context(1), zmq_client(context, ZMQ_REQ) {
   // 构造函数的实现
   // 初始化成员变量
   // 创建 ZeroMQ 客户端
@@ -25,24 +25,31 @@ NetworkManager::~NetworkManager() {
 }
 
 bool NetworkManager::registerUser(double cnt_time, int timeout) {
-  // 注册视觉程序的实现
   SendStruct send_message;
-  send_message.yaw = 0.0; // 设置具体的注册信息
+  send_message.yaw = 0.0;
   send_message.pitch = 0.0;
   send_message.time_stamp = cnt_time;
-  // 其他字段也可以设置
 
-  std::string json_message = JSONSerializer::serialize(send_message);
-  zmq_client.send(json_message);
+  nlohmann::json json_message = send_message;
+
+  std::string json_str = json_message.dump();
+
+  // 发送JSON字符串
+  zmq::message_t message(json_str.c_str(), json_str.size());
+  zmq_client.send(message);
 
   // 等待注册成功的响应
-  std::string response = zmq_client.receive();
-  if (response == "Registration successful") {
+  zmq::message_t response;
+  zmq_client.recv(&response);
+  std::string response_str(static_cast<char *>(response.data()),
+                           response.size());
+
+  if (response_str == "Registration successful") {
     on_register = true;
     return true;
   } else {
     if (error_handle) {
-      error_handle(1, "Registration failed: " + response);
+      error_handle(1, "Registration failed: " + response_str);
     }
     return false;
   }
@@ -60,35 +67,43 @@ bool NetworkManager::offlineUser(int timeout) {
   SendStruct send_message;
   // 设置下线信息
 
-  std::string json_message = JSONSerializer::serialize(send_message);
-  zmq_client.send(json_message);
+  std::string json_message = nlohmann::json(send_message).dump();
+  zmq::message_t message(json_message.c_str(), json_message.size());
+  zmq_client.send(message);
 
   // 等待下线成功的响应
-  std::string response = zmq_client.receive();
-  if (response == "Offline successful") {
+  zmq::message_t response;
+  zmq_client.recv(&response);
+  std::string response_str(static_cast<char *>(response.data()),
+                           response.size());
+
+  if (response_str == "Offline successful") {
     Close();
     return true;
   } else {
     if (error_handle) {
-      error_handle(5, "Offline failed: " + response);
+      error_handle(5, "Offline failed: " + response_str);
     }
     return false;
   }
 }
 
-RecvStruct NetworkManager::getNewestRecvMessage() {
+RecvStruct NetworkManager::getLatestRecvMessage() {
   std::lock_guard<std::mutex> lock(handler_mutex);
-  return newest_recv_message;
+  return latest_recv_message;
 }
 
 void NetworkManager::recv_handler() {
   while (is_running) {
-    std::string json_message = zmq_client.receive();
-    // 将收到的 JSON 消息反序列化为 RecvStruct
-    RecvStruct recv_message = JSONSerializer::deserialize(json_message);
+    zmq::message_t response;
+    zmq_client.recv(&response);
+    std::string json_message(static_cast<char *>(response.data()),
+                             response.size());
+
+    auto temp_struct = nlohmann::json::parse(json_message);
 
     std::lock_guard<std::mutex> lock(handler_mutex);
-    newest_recv_message = recv_message;
+    latest_recv_message = temp_struct;
   }
 }
 
@@ -106,4 +121,4 @@ void NetworkManager::Close() {
   }
 }
 
-} // namespace Net
+} // namespace network
