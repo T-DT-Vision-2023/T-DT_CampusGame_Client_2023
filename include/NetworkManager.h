@@ -41,9 +41,6 @@ private:
  bool on_game = 0;
  bool close = 0;
 
- std::string *image_buff;
- int image_buff_size = 1;
-
  RecvStruct latest_recv_message;
 
  void (*error_handle)(int error_id, std::string message);

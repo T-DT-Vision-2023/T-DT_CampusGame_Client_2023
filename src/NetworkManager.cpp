@@ -11,7 +11,7 @@ NetworkManager::NetworkManager(std::string server_ip, int student_id,
                                void (*error_handle)(int, std::string))
     : server_ip(server_ip), student_id(student_id), team_name(team_name),
       server_port(server_port), client_port(client_port),
-      error_handle(error_handle), context(1), zmq_client(context, ZMQ_REQ) {
+      error_handle(error_handle) {
   // 构造函数的实现
   // 初始化成员变量
   // 创建 ZeroMQ 客户端
