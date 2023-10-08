@@ -13,15 +13,15 @@ ZMQClient::~ZMQClient() { socket.close(); }
 void ZMQClient::send(const std::string &message) {
   zmq::message_t zmq_message(message.size());
   memcpy(zmq_message.data(), message.data(), message.size());
-  socket.send(zmq_message);
+  socket.send(zmq_message, zmq::send_flags::none);
 }
 
 std::string ZMQClient::receive() {
   zmq::message_t zmq_message;
-  socket.recv(&zmq_message);
+  socket.recv(zmq_message, zmq::recv_flags::none);
   return std::string(static_cast<char *>(zmq_message.data()),
                      zmq_message.size());
 }
 
-} // namespace Network
+} // namespace network
 } // namespace tools
