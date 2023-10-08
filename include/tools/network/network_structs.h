@@ -1,6 +1,7 @@
-//
-// Created by momo on 23-10-8.
-//
+/*************************
+* @note 请不要直接使用本头文件内的资源
+* @note 请通过NetworkManager.h中的NetworkManager类来使用本头文件内的资源
+*/
 #ifndef GAMECLIENT_NETWORK_STRUCTS_H
 #define GAMECLIENT_NETWORK_STRUCTS_H
 

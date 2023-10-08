@@ -36,11 +36,11 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
 
   // 发送JSON字符串
   zmq::message_t message(json_str.c_str(), json_str.size());
-  zmq_client.send(message);
+  zmq_client.send(message, zmq::send_flags::none);
 
   // 等待注册成功的响应
   zmq::message_t response;
-  zmq_client.recv(&response);
+  zmq_client.recv(response, zmq::recv_flags::none);
   std::string response_str(static_cast<char *>(response.data()),
                            response.size());
 
@@ -69,11 +69,11 @@ bool NetworkManager::offlineUser(int timeout) {
 
   std::string json_message = nlohmann::json(send_message).dump();
   zmq::message_t message(json_message.c_str(), json_message.size());
-  zmq_client.send(message);
+  zmq_client.send(message, zmq::send_flags::none);
 
   // 等待下线成功的响应
   zmq::message_t response;
-  zmq_client.recv(&response);
+  zmq_client.recv(response, zmq::recv_flags::none);
   std::string response_str(static_cast<char *>(response.data()),
                            response.size());
 
@@ -93,10 +93,30 @@ RecvStruct NetworkManager::getLatestRecvMessage() {
   return latest_recv_message;
 }
 
+void NetworkManager::sendControlMessage(const SendStruct &send_message) {
+  // 实现向服务端发送控制信息的逻辑
+  nlohmann::json json_message = send_message;
+  std::string json_str = json_message.dump();
+
+  zmq::message_t message(json_str.c_str(), json_str.size());
+  zmq_client.send(message, zmq::send_flags::none);
+}
+
+void NetworkManager::sendPulse() {
+  // 实现向服务端发送心跳包的逻辑
+  // 你可以在这里发送一个特定的心跳包以维持连接
+}
+
+bool NetworkManager::getGameStatus() {
+  // 实现从服务端获取当前游戏状态的逻辑
+  // 可能需要发送请求并等待响应来获取游戏状态
+  return on_game;
+}
+
 void NetworkManager::recv_handler() {
   while (is_running) {
     zmq::message_t response;
-    zmq_client.recv(&response);
+    zmq_client.recv(response, zmq::recv_flags::none);
     std::string json_message(static_cast<char *>(response.data()),
                              response.size());
 

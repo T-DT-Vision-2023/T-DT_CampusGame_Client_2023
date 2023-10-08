@@ -1,5 +1,3 @@
-// json_serializer.cpp
-
 #include "tools/network/json_serializer.h"
 #include <opencv2/opencv.hpp>
 
