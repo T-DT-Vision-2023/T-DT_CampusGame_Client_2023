@@ -5,7 +5,7 @@
 
 namespace nlohmann {
 
-void adl_serializer<network::SendStruct>::to_json(json &j, const network::SendStruct &s) {
+void adl_serializer<network::RecvStruct>::to_json(json &j, const network::RecvStruct &s) {
   j = {
       {"yaw", s.yaw},
       {"pitch", s.pitch},
@@ -23,7 +23,7 @@ void adl_serializer<network::SendStruct>::to_json(json &j, const network::SendSt
   }
 }
 
-void adl_serializer<network::SendStruct>::from_json(const json &j, network::SendStruct &s) {
+void adl_serializer<network::RecvStruct>::from_json(const json &j, network::RecvStruct &s) {
   s.yaw = j["yaw"];
   s.pitch = j["pitch"];
   s.time_stamp = j["time_stamp"];
@@ -39,7 +39,7 @@ void adl_serializer<network::SendStruct>::from_json(const json &j, network::Send
   }
 }
 
-void adl_serializer<network::RecvStruct>::to_json(json &j, const network::RecvStruct &s) {
+void adl_serializer<network::SendStruct>::to_json(json &j, const network::SendStruct &s) {
   j = {
       {"yaw", s.yaw},
       {"pitch", s.pitch},
@@ -50,7 +50,7 @@ void adl_serializer<network::RecvStruct>::to_json(json &j, const network::RecvSt
   };
 }
 
-void adl_serializer<network::RecvStruct>::from_json(const json &j, network::RecvStruct &s) {
+void adl_serializer<network::SendStruct>::from_json(const json &j, network::SendStruct &s) {
   s.yaw = j["yaw"];
   s.pitch = j["pitch"];
   s.shoot = j["shoot"];

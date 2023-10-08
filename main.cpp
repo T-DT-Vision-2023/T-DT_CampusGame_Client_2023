@@ -7,7 +7,7 @@ bool reg = false;
 
 void error_handle(int error_id, std::string message);
 
-Net::NetworkManager net("127.0.0.1", 20205654, "梗小姐赢麻了", 25562, 25564,
+network::NetworkManager net("127.0.0.1", 20205654, "梗小姐赢麻了", 25562, 25564,
                         error_handle);
 
 void sigint_handler(int sig) {
@@ -17,6 +17,10 @@ void sigint_handler(int sig) {
 
 int main() {
   signal(SIGINT, sigint_handler);
+
+  // 创建 NetworkManager 对象
+  network::NetworkManager net("127.0.0.1", 20205654, "梗小姐赢麻了", 25562,
+                              25564, error_handle);
 
   // 注册视觉程序
   reg = net.registerUser(0);
@@ -34,7 +38,7 @@ int main() {
 
     // 获取最新的图像数据
     cv::Mat img;
-    auto message = net.getNewestRecvMessage();
+    auto message = net.getLatestRecvMessage();
 
     if (!message.img.empty()) {
       // 在这里添加图像处理逻辑
@@ -44,7 +48,7 @@ int main() {
 
       // 发送控制信息
       net.sendControlMessage(
-          Net::SendStruct(0.0, 0.0, fire, 0, 20.0, 0, 0.0, 0.0, 1280, 720));
+          network::SendStruct(0.0, 0.0, fire, 0, 1280, 720));
 
       // 显示图像
       cv::imshow("img", message.img);
@@ -52,8 +56,6 @@ int main() {
       std::cout << "Get an empty image" << std::endl;
       cv::waitKey(100);
     }
-
-    // net.sendPulse();
   }
 
   return 0;
