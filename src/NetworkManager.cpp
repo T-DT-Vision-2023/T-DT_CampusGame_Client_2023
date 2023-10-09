@@ -1,58 +1,64 @@
 #include "NetworkManager.h"
+#include <chrono>
 #include <iostream>
 #include <nlohmann/json.hpp>
 #include <thread>
+#include <utility>
 
 namespace network {
 
-NetworkManager::NetworkManager(std::string server_ip, int student_id,
+NetworkManager::NetworkManager(const std::string &server_ip, int student_id,
                                std::string team_name, int server_port,
-                               int client_port,
-                               void (*error_handle)(int, std::string))
-    : server_ip(server_ip), student_id(student_id), team_name(team_name),
-      server_port(server_port), client_port(client_port),
-      error_handle(error_handle) {
-  // 构造函数的实现
-  // 初始化成员变量
-  // 创建 ZeroMQ 客户端
-  // 启动通信线程
-  handler_thread = std::thread(&NetworkManager::recvHandler, this);
-}
+                               int client_port)
+    : student_id(student_id), team_name(std::move(team_name)),
+      server_address("tcp://" + server_ip + ":" + std::to_string(server_port)),
+      zmq_client(server_address) {}
 
-NetworkManager::~NetworkManager() {
-  // 析构函数的实现
-  Close();
-}
+NetworkManager::~NetworkManager() { Close(); }
+
+#include <chrono>
+
+#include <chrono>
 
 bool NetworkManager::registerUser(double cnt_time, int timeout) {
-
-  std::string header_str = "msg";
-  zmq::message_t header(header_str.c_str(), header_str.size());
-
-  nlohmann::json json_message;
-  json_message["type"] = "register";
-  json_message["info"] = team_name;
-  json_message["id"] = student_id;
-  json_message["time"] = cnt_time;
-  json_message["pwd"] = "T-DT ALGORITHM 2023";
-  json_message["version"] = 1.1;
-
-  std::string json_str = json_message.dump();
-  zmq::message_t message(json_str.c_str(), json_str.size());
-
-  zmq_client.send(header, zmq::send_flags::sndmore);
-  zmq_client.send(message, zmq::send_flags::none);
-
   int elapsed_time = 0;
+
   while (elapsed_time < timeout) {
-    std::lock_guard<std::mutex> lock(handler_mutex);
-    if (on_register) {
-      on_register = 0;
-      return true;
+    try {
+      zmq_client.connect(server_address);
+
+      std::string header_str = "msg";
+      zmq::message_t header(header_str.c_str(), header_str.size());
+
+      nlohmann::json json_message;
+      json_message["type"] = "register";
+      json_message["info"] = team_name;
+      json_message["id"] = student_id;
+      json_message["time"] = cnt_time;
+      json_message["pwd"] = "T-DT ALGORITHM 2024";
+      json_message["version"] = 1.1;
+
+      std::string json_str = json_message.dump();
+      zmq::message_t message(json_str.c_str(), json_str.size());
+
+      zmq_client.send(header, message);
+
+      std::lock_guard<std::mutex> lock(handler_mutex);
+      if (on_register) {
+        handler_thread = std::thread(&NetworkManager::recvHandler, this);
+        return true;
+      }
+
+      break;
+    } catch (const zmq::error_t &e) {
+      std::cout << "Connection failed, retrying..." << std::endl;
     }
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    elapsed_time += 10;
+
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    elapsed_time += 1000;
   }
+
+  std::cout << "Connection attempt timed out." << std::endl;
   return false;
 }
 
@@ -66,8 +72,7 @@ bool NetworkManager::offlineUser(int timeout) {
   std::string json_str = json_message.dump();
   zmq::message_t message(json_str.c_str(), json_str.size());
 
-  zmq_client.send(header, zmq::send_flags::sndmore);
-  zmq_client.send(message, zmq::send_flags::none);
+  zmq_client.send(header, message);
 
   int elapsed_time = 0;
   while (elapsed_time < timeout) {
@@ -98,15 +103,13 @@ void NetworkManager::sendControlMessage(const SendStruct &send_message) {
 
   std::string json_str = json_message.dump();
   zmq::message_t message(json_str.c_str(), json_str.size());
-
-  zmq_client.send(header, zmq::send_flags::sndmore);
-  zmq_client.send(message, zmq::send_flags::none);
+  zmq_client.send(header, message);
 }
 
 void NetworkManager::sendPulse() {
   std::string message_str = "pulse";
   zmq::message_t message(message_str.c_str(), message_str.size());
-  zmq_client.send(message, zmq::send_flags::none);
+  zmq_client.send(message);
 }
 
 bool NetworkManager::getGameStatus() {
@@ -121,13 +124,13 @@ void NetworkManager::recvHandler() {
   while (true) {
     try {
       zmq::message_t header;
-      auto ok = zmq_client.recv(header, zmq::recv_flags::none);
+      auto ok = zmq_client.socket.recv(header);
       if (!ok)
         continue;
       std::string header_str(static_cast<char *>(header.data()), header.size());
 
       zmq::message_t message;
-      ok = zmq_client.recv(message, zmq::recv_flags::none);
+      ok = zmq_client.socket.recv(message);
       if (!ok)
         continue;
       std::string json_message(static_cast<char *>(message.data()),
@@ -149,9 +152,7 @@ void NetworkManager::recvHandler() {
       std::this_thread::sleep_for(std::chrono::seconds(1));
 
     } catch (const zmq::error_t &e) {
-      if (error_handle) {
-        error_handle(-1, e.what());
-      }
+      std::cout << "ZMQ Error: " << e.what() << std::endl;
     }
   }
 }

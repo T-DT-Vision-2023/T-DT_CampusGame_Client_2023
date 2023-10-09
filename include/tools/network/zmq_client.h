@@ -16,15 +16,17 @@ public:
   ZMQClient(const std::string &server_address);
   ~ZMQClient();
 
-  void send(const std::string &message);
-  std::string receive();
+  void connect(const std::string &server_address);
+  void send(zmq::message_t &message);
+  void send(zmq::message_t &header, zmq::message_t &message);
+  void recv(zmq::message_t &message);
 
-private:
+public:
   zmq::context_t context;
   zmq::socket_t socket;
 };
 
-} // namespace Network
+} // namespace network
 } // namespace tools
 
 #endif

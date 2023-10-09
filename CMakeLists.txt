@@ -12,11 +12,9 @@ add_executable(GameClient main.cpp ${SOURCES_DIR})
 target_include_directories(GameClient PRIVATE ${INCLUDE_DIR})
 
 find_package(OpenCV REQUIRED)
-
-set(ZMQ_LIBRARY_PATH "/usr/lib/x86_64-linux-gnu/libzmq.so")
+find_library(ZMQ_LIBRARY NAMES zmq)
 
 target_link_libraries(GameClient
-    ${ZMQ_LIBRARY_PATH}
-    ${OpenCV_LIBS}
+        ${ZMQ_LIBRARY}
+        ${OpenCV_LIBS}
 )
-

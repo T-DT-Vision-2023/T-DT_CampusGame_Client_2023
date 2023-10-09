@@ -5,11 +5,6 @@
 
 bool reg = false;
 
-void error_handle(int error_id, std::string message);
-
-network::NetworkManager net("127.0.0.1", 20205654, "梗小姐赢麻了", 25562, 25564,
-                            error_handle);
-
 void sigint_handler(int sig) { exit(1); }
 
 int main() {
@@ -17,7 +12,7 @@ int main() {
 
   // 创建 NetworkManager 对象
   network::NetworkManager net("127.0.0.1", 20205654, "梗小姐赢麻了", 5555,
-                              25564, error_handle);
+                              25564);
 
   // 注册视觉程序
   reg = net.registerUser(0);
@@ -56,12 +51,4 @@ int main() {
     }
   }
   return 0;
-}
-
-// 错误处理函数
-void error_handle(int error_id, std::string message) {
-  if (error_id == 1 || error_id == 5) {
-    reg = false; // 注册失败时设置为false
-  }
-  std::cout << "Error: " << error_id << " " << message << std::endl;
 }
