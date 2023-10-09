@@ -35,7 +35,7 @@ private:
  std::mutex handler_mutex;
  std::thread handler_thread;
  tools::Base64 base64;
- bool is_running = 1;
+ bool running = true;
  bool on_register = 0;
  bool recv_close = 0;
  bool on_game = 0;
@@ -46,7 +46,7 @@ private:
  void (*error_handle)(int error_id, std::string message);
 
 private:
- void recv_handler();
+ void recvHandler();
 
 public:
  /************************************

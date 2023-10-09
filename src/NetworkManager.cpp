@@ -16,7 +16,7 @@ NetworkManager::NetworkManager(std::string server_ip, int student_id,
   // 初始化成员变量
   // 创建 ZeroMQ 客户端
   // 启动通信线程
-  handler_thread = std::thread(&NetworkManager::recv_handler, this);
+  handler_thread = std::thread(&NetworkManager::recvHandler, this);
 }
 
 NetworkManager::~NetworkManager() {
@@ -25,9 +25,12 @@ NetworkManager::~NetworkManager() {
 }
 
 bool NetworkManager::registerUser(double cnt_time, int timeout) {
+
+  std::string header_str = "msg";
+  zmq::message_t header(header_str.c_str(), header_str.size());
+
   nlohmann::json json_message;
-  json_message["type"] = "msg";
-  json_message["msg"] = "register";
+  json_message["type"] = "register";
   json_message["info"] = team_name;
   json_message["id"] = student_id;
   json_message["time"] = cnt_time;
@@ -36,6 +39,8 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
 
   std::string json_str = json_message.dump();
   zmq::message_t message(json_str.c_str(), json_str.size());
+
+  zmq_client.send(header, zmq::send_flags::sndmore);
   zmq_client.send(message, zmq::send_flags::none);
 
   int elapsed_time = 0;
@@ -52,12 +57,16 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
 }
 
 bool NetworkManager::offlineUser(int timeout) {
+  std::string header_str = "msg";
+  zmq::message_t header(header_str.c_str(), header_str.size());
+
   nlohmann::json json_message;
-  json_message["type"] = "msg";
-  json_message["msg"] = "offline";
+  json_message["type"] = "offline";
 
   std::string json_str = json_message.dump();
   zmq::message_t message(json_str.c_str(), json_str.size());
+
+  zmq_client.send(header, zmq::send_flags::sndmore);
   zmq_client.send(message, zmq::send_flags::none);
 
   int elapsed_time = 0;
@@ -82,19 +91,21 @@ RecvStruct NetworkManager::getLatestRecvMessage() {
 }
 
 void NetworkManager::sendControlMessage(const SendStruct &send_message) {
+  std::string header_str = "data";
+  zmq::message_t header(header_str.c_str(), header_str.size());
+
   nlohmann::json json_message = send_message;
-  json_message["type"] = "data";
+
   std::string json_str = json_message.dump();
   zmq::message_t message(json_str.c_str(), json_str.size());
+
+  zmq_client.send(header, zmq::send_flags::sndmore);
   zmq_client.send(message, zmq::send_flags::none);
 }
 
 void NetworkManager::sendPulse() {
-  nlohmann::json json_message;
-  json_message["type"] = "pulse";
-
-  std::string json_str = json_message.dump();
-  zmq::message_t message(json_str.c_str(), json_str.size());
+  std::string message_str = "pulse";
+  zmq::message_t message(message_str.c_str(), message_str.size());
   zmq_client.send(message, zmq::send_flags::none);
 }
 
@@ -106,51 +117,40 @@ bool NetworkManager::getGameStatus() {
   return ret;
 }
 
-void NetworkManager::recv_handler() {
-  while (is_running) {
+void NetworkManager::recvHandler() {
+  while (true) {
     try {
-      zmq::message_t response;
-      zmq_client.recv(response, zmq::recv_flags::none);
-      std::string json_message(static_cast<char *>(response.data()),
-                               response.size());
+      zmq::message_t header;
+      auto ok = zmq_client.recv(header, zmq::recv_flags::none);
+      if (!ok)
+        continue;
+      std::string header_str(static_cast<char *>(header.data()), header.size());
 
+      zmq::message_t message;
+      ok = zmq_client.recv(message, zmq::recv_flags::none);
+      if (!ok)
+        continue;
+      std::string json_message(static_cast<char *>(message.data()),
+                               message.size());
       nlohmann::json parsed_message = nlohmann::json::parse(json_message);
 
       std::lock_guard<std::mutex> lock(handler_mutex);
 
-      if (parsed_message["type"] == "msg") {
-        if (parsed_message["msg"] == "register success") {
+      if (header_str == "msg") {
+        if (parsed_message["type"] == "register success") {
           on_register = 1;
         } else if (parsed_message["msg"] == "offline success") {
           recv_close = 1;
         }
-
-      } else if (parsed_message["type"] == "data") {
-        parsed_message.erase("type");
+      } else if (header_str == "data") {
         latest_recv_message = parsed_message;
-
-      } else if (parsed_message["type"] == "usermsg") {
-        std::string info;
-        if (parsed_message["msg"].is_string()) {
-          if (parsed_message.contains("info") &&
-              parsed_message["info"].is_string()) {
-            info = "[" + parsed_message["info"].get<std::string>() +
-                   "] Recv a message from server: " +
-                   parsed_message["msg"].get<std::string>();
-          } else {
-            info = "[INFO] Recv a message from server: " +
-                   parsed_message["msg"].get<std::string>();
-          }
-        } else {
-          info = "[ERROR] Recv an unknown message from server. Considering "
-                 "update your client.";
-        }
-        std::cout << info << std::endl;
       }
+
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+
     } catch (const zmq::error_t &e) {
-      std::cerr << "ZMQ Error in recv_handler: " << e.what() << std::endl;
       if (error_handle) {
-        error_handle(-1, e.what()); // 使用-1作为ZMQ错误的错误ID
+        error_handle(-1, e.what());
       }
     }
   }
