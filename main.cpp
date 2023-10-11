@@ -16,18 +16,9 @@ int main() {
 
   // 注册视觉程序
   reg = net.registerUser(0);
-  while (!reg) {
-    std::cout << "Register failed, retrying..." << std::endl;
-    reg = net.registerUser(0);
-  }
   std::cout << "Register success" << std::endl;
 
   while (true) {
-    while (!reg) {
-      std::cout << "Register failed, retrying..." << std::endl;
-      reg = net.registerUser(0);
-    }
-
     cv::Mat img;
     auto message = net.getLatestRecvMessage();
 
@@ -46,8 +37,8 @@ int main() {
       /*******************************************************************************/
 
     } else {
-      std::cout << "Get an empty image" << std::endl;
-      cv::waitKey(100);
+      std::cout << "Get an empty image~" << std::endl;
+      cv::waitKey(1000);
     }
   }
   return 0;

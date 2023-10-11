@@ -58,7 +58,9 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
       handler_thread = std::thread(&NetworkManager::recvHandler, this);
       return true;
     }
-    break;
+
+    std::cout << "Register Failed! Retrying..." << std::endl;
+    cv::waitKey(1000);
   }
 
   std::cout << "Connection attempt timed out." << std::endl;
