@@ -16,10 +16,6 @@ NetworkManager::NetworkManager(const std::string &server_ip, int student_id,
 
 NetworkManager::~NetworkManager() { Close(); }
 
-#include <chrono>
-
-#include <chrono>
-
 bool NetworkManager::registerUser(double cnt_time, int timeout) {
   int elapsed_time = 0;
 
