@@ -11,7 +11,7 @@ int main() {
   signal(SIGINT, sigint_handler);
 
   // 创建 NetworkManager 对象
-  network::NetworkManager net("localhost", 20205654, "梗小姐赢麻了", 5558,
+  network::NetworkManager net("127.0.0.1", 20205654, "梗小姐赢麻了", 5558,
                               5559);
 
   // 注册视觉程序

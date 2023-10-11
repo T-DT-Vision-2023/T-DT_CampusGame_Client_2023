@@ -32,7 +32,7 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
       json_message["id"] = student_id;
       json_message["time"] = cnt_time;
       json_message["pwd"] = "T-DT ALGORITHM 2024";
-      json_message["version"] = 1.1;
+      json_message["version"] = 1.2;
 
       std::string json_str = json_message.dump();
       zmq::message_t message(json_str.c_str(), json_str.size());
@@ -41,6 +41,7 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
 
       std::lock_guard<std::mutex> lock(handler_mutex);
       if (on_register) {
+        startHeartbeatTimer();
         handler_thread = std::thread(&NetworkManager::recvHandler, this);
         return true;
       }
@@ -111,6 +112,15 @@ void NetworkManager::sendPulse() {
   zmq::message_t message(json_str.c_str(), json_str.size());
 
   zmq_client.send(header, message);
+}
+
+void NetworkManager::startHeartbeatTimer() {
+  std::thread([this]() {
+    while (true) {
+      sendPulse();
+      std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+  }).detach();
 }
 
 bool NetworkManager::getGameStatus() {

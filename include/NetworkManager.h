@@ -102,6 +102,12 @@ public:
   void sendPulse();
 
   /************************************
+   * @name    启动心跳包定时器
+   * @brief   启动心跳包定时器
+   */
+  void startHeartbeatTimer();
+
+  /************************************
    * @name    获取游戏状态
    * @brief   从服务端获取当前游戏状态
    * @return  (bool) 游戏运行中返回true，否则返回false
