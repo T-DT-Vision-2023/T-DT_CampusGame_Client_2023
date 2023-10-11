@@ -4,7 +4,12 @@ namespace tools {
 namespace network {
 
 ZMQClient::ZMQClient(const std::string &server_address)
-    : context(1), send_socket(context, ZMQ_REQ), recv_socket(context, ZMQ_REP) {}
+    : context(1), send_socket(context, ZMQ_PUSH),
+      recv_socket(context, ZMQ_PULL) {
+  int highWaterMark = 1000;
+  send_socket.set(zmq::sockopt::sndhwm, highWaterMark);
+  recv_socket.set(zmq::sockopt::rcvhwm, highWaterMark);
+}
 
 ZMQClient::~ZMQClient() {
   send_socket.close();

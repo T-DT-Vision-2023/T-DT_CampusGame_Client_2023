@@ -2,7 +2,6 @@
 #include <chrono>
 #include <iostream>
 #include <nlohmann/json.hpp>
-#include <thread>
 #include <utility>
 
 namespace network {
@@ -23,8 +22,8 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
     try {
       zmq_client.connectSend(server_address);
     } catch (const zmq::error_t &e) {
-      std::cout << "ZMQ Error in connecting send server: " << e.what() << ", retrying..."
-                << std::endl;
+      std::cout << "ZMQ Error in connecting send server: " << e.what()
+                << ", retrying..." << std::endl;
       std::this_thread::sleep_for(std::chrono::seconds(1));
       elapsed_time += 1000;
       continue;
@@ -46,8 +45,8 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
     try {
       zmq_client.send(header, message);
     } catch (const zmq::error_t &e) {
-      std::cout << "ZMQ Error in sending message: " << e.what() << ", retrying..."
-                << std::endl;
+      std::cout << "ZMQ Error in sending message: " << e.what()
+                << ", retrying..." << std::endl;
       std::this_thread::sleep_for(std::chrono::seconds(1));
       elapsed_time += 1000;
       continue;
@@ -59,6 +58,7 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
       handler_thread = std::thread(&NetworkManager::recvHandler, this);
       return true;
     }
+    break;
   }
 
   std::cout << "Connection attempt timed out." << std::endl;
@@ -148,46 +148,41 @@ void NetworkManager::recvHandler() {
     }
   }
   while (true) {
+    zmq::message_t header;
     try {
-      zmq::message_t header;
-      try {
-        zmq_client.recv(header);
-      } catch (const zmq::error_t &e) {
-        std::cout << "ZMQ Error in receiving header: " << e.what()
-                  << ", retrying..." << std::endl;
-        continue;
-      }
-      std::string header_str(static_cast<char *>(header.data()), header.size());
-
-      zmq::message_t message;
-      try {
-        zmq_client.recv(message);
-      } catch (const zmq::error_t &e) {
-        std::cout << "ZMQ Error in receiving message: " << e.what()
-                  << ", retrying..." << std::endl;
-        continue;
-      }
-      std::string json_message(static_cast<char *>(message.data()),
-                               message.size());
-      nlohmann::json parsed_message = nlohmann::json::parse(json_message);
-
-      std::lock_guard<std::mutex> lock(handler_mutex);
-
-      if (header_str == "msg") {
-        if (parsed_message["type"] == "register success") {
-          on_register = 1;
-        } else if (parsed_message["type"] == "offline success") {
-          recv_close = 1;
-        }
-      } else if (header_str == "data") {
-        latest_recv_message = parsed_message;
-      }
-
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-
+      zmq_client.recv(header);
     } catch (const zmq::error_t &e) {
-      std::cout << "ZMQ Error: " << e.what() << std::endl;
+      std::cout << "ZMQ Error in receiving header: " << e.what()
+                << ", retrying..." << std::endl;
+
+      continue;
     }
+    std::string header_str(static_cast<char *>(header.data()), header.size());
+
+    zmq::message_t message;
+    try {
+      zmq_client.recv(message);
+    } catch (const zmq::error_t &e) {
+      std::cout << "ZMQ Error in receiving message: " << e.what()
+                << ", retrying..." << std::endl;
+      continue;
+    }
+    std::string json_message(static_cast<char *>(message.data()),
+                             message.size());
+    nlohmann::json parsed_message = nlohmann::json::parse(json_message);
+
+    std::lock_guard<std::mutex> lock(handler_mutex);
+
+    if (header_str == "msg") {
+      if (parsed_message["type"] == "register success") {
+        on_register = 1;
+      } else if (parsed_message["type"] == "offline success") {
+        recv_close = 1;
+      }
+    } else if (header_str == "data") {
+      latest_recv_message = parsed_message;
+    }
+
   }
 }
 
