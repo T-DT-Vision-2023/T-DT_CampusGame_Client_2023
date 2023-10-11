@@ -107,9 +107,14 @@ void NetworkManager::sendControlMessage(const SendStruct &send_message) {
 }
 
 void NetworkManager::sendPulse() {
-  std::string message_str = "pulse";
-  zmq::message_t message(message_str.c_str(), message_str.size());
-  zmq_client.send(message);
+  std::string header_str = "msg";
+  zmq::message_t header(header_str.c_str(), header_str.size());
+  nlohmann::json json_message;
+  json_message["type"] = "pulse";
+  std::string json_str = json_message.dump();
+  zmq::message_t message(json_str.c_str(), json_str.size());
+
+  zmq_client.send(header, message);
 }
 
 bool NetworkManager::getGameStatus() {
@@ -142,7 +147,7 @@ void NetworkManager::recvHandler() {
       if (header_str == "msg") {
         if (parsed_message["type"] == "register success") {
           on_register = 1;
-        } else if (parsed_message["msg"] == "offline success") {
+        } else if (parsed_message["type"] == "offline success") {
           recv_close = 1;
         }
       } else if (header_str == "data") {
