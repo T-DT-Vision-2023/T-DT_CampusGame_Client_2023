@@ -21,7 +21,7 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
 
   while (elapsed_time < timeout) {
     try {
-      zmq_client.connect(server_address);
+      zmq_client.connectSend(server_address);
 
       std::string header_str = "msg";
       zmq::message_t header(header_str.c_str(), header_str.size());
@@ -48,7 +48,7 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
 
       break;
     } catch (const zmq::error_t &e) {
-      std::cout << "Connection failed, retrying..." << std::endl;
+      std::cout << "ZMQ Error: " << e.what() << ", retrying..." << std::endl;
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -134,16 +134,30 @@ bool NetworkManager::getGameStatus() {
 void NetworkManager::recvHandler() {
   while (true) {
     try {
+      zmq_client.connectRecv(server_address);
+      break;
+    } catch (const zmq::error_t &e) {
+      std::cout << "ZMQ Error: " << e.what() << ", retrying..." << std::endl;
+    }
+  }
+  while (true) {
+    try {
       zmq::message_t header;
-      auto ok = zmq_client.socket.recv(header);
-      if (!ok)
+      try {
+        zmq_client.recv(header);
+      } catch (const zmq::error_t &e) {
+        std::cout << "ZMQ Error: " << e.what() << ", retrying..." << std::endl;
         continue;
+      }
       std::string header_str(static_cast<char *>(header.data()), header.size());
 
       zmq::message_t message;
-      ok = zmq_client.socket.recv(message);
-      if (!ok)
+      try {
+        zmq_client.recv(message);
+      } catch (const zmq::error_t &e) {
+        std::cout << "ZMQ Error: " << e.what() << ", retrying..." << std::endl;
         continue;
+      }
       std::string json_message(static_cast<char *>(message.data()),
                                message.size());
       nlohmann::json parsed_message = nlohmann::json::parse(json_message);

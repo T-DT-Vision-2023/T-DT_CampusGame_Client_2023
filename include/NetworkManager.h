@@ -40,7 +40,7 @@ private:
   tools::network::ZMQClient zmq_client;
 
   RecvStruct latest_recv_message;
-  void recvHandler();
+
 
 public:
   /************************************
@@ -87,6 +87,13 @@ public:
    * @return  (RecvStruct) 最新的数据帧信息
    */
   RecvStruct getLatestRecvMessage();
+
+  /************************************
+   * @name    接收数据帧处理线程
+   * @brief   用于接收数据帧的处理线程
+   * @return  (void)
+   */
+  void recvHandler();
 
   /************************************
    * @name    向服务端发送控制信息

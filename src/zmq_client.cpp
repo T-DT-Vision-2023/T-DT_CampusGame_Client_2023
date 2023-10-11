@@ -4,25 +4,32 @@ namespace tools {
 namespace network {
 
 ZMQClient::ZMQClient(const std::string &server_address)
-    : context(1), socket(context, ZMQ_REQ) {}
+    : context(1), send_socket(context, ZMQ_REQ), recv_socket(context, ZMQ_REP) {}
 
-ZMQClient::~ZMQClient() { socket.close(); }
+ZMQClient::~ZMQClient() {
+  send_socket.close();
+  recv_socket.close();
+}
 
-void ZMQClient::connect(const std::string &server_address) {
-  socket.connect(server_address);
+void ZMQClient::connectSend(const std::string &server_address) {
+  send_socket.connect(server_address);
+}
+
+void ZMQClient::connectRecv(const std::string &server_address) {
+  recv_socket.connect(server_address);
 }
 
 void ZMQClient::send(zmq::message_t &message) {
-  socket.send(message, zmq::send_flags::none);
+  send_socket.send(message, zmq::send_flags::none);
 }
 
 void ZMQClient::send(zmq::message_t &header, zmq::message_t &message) {
-  socket.send(header, zmq::send_flags::sndmore);
-  socket.send(message, zmq::send_flags::none);
+  send_socket.send(header, zmq::send_flags::sndmore);
+  send_socket.send(message, zmq::send_flags::none);
 }
 
 void ZMQClient::recv(zmq::message_t &message) {
-  socket.recv(message, zmq::recv_flags::none);
+  recv_socket.recv(message, zmq::recv_flags::none);
 }
 
 } // namespace network
