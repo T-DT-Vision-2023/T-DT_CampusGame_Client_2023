@@ -15,7 +15,7 @@ int main() {
                               5559);
 
   // 注册视觉程序
-  reg = net.registerUser(0);
+  reg = net.registerUser(0, 100000);
   if (!reg) {
     std::cout << "Register Failed, Exit" << std::endl;
     exit(1);

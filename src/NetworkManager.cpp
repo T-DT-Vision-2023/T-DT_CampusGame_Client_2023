@@ -161,9 +161,9 @@ void NetworkManager::recvHandler() {
 
     if (header_str == "msg") {
       if (parsed_message["type"] == "register success") {
-        on_register = 1;
+        on_register = true;
       } else if (parsed_message["type"] == "offline success") {
-        recv_close = 1;
+        recv_close = true;
       }
     } else if (header_str == "data") {
       latest_recv_message = parsed_message;

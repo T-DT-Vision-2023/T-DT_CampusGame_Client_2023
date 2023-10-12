@@ -13,7 +13,7 @@ namespace network {
 
 class ZMQClient {
 public:
- ZMQClient(const std::string &server_address);
+ explicit ZMQClient(const std::string &server_address);
  ~ZMQClient();
 
  void connectSend(const std::string &server_address);
