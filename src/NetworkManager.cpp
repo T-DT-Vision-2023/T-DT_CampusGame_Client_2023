@@ -17,17 +17,9 @@ NetworkManager::~NetworkManager() { Close(); }
 
 bool NetworkManager::registerUser(double cnt_time, int timeout) {
   int elapsed_time = 0;
-
   while (elapsed_time < timeout) {
-    try {
-      zmq_client.connectSend(server_address);
-    } catch (const zmq::error_t &e) {
-      std::cout << "ZMQ Error in connecting send server: " << e.what()
-                << ", retrying..." << std::endl;
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-      elapsed_time += 1000;
-      continue;
-    }
+    zmq_client.connectSend(server_address);
+
     std::string header_str = "msg";
     zmq::message_t header(header_str.c_str(), header_str.size());
 
@@ -42,27 +34,19 @@ bool NetworkManager::registerUser(double cnt_time, int timeout) {
     std::string json_str = json_message.dump();
     zmq::message_t message(json_str.c_str(), json_str.size());
 
-    try {
-      zmq_client.send(header, message);
-    } catch (const zmq::error_t &e) {
-      std::cout << "ZMQ Error in sending message: " << e.what()
-                << ", retrying..." << std::endl;
-      std::this_thread::sleep_for(std::chrono::seconds(1));
-      elapsed_time += 1000;
-      continue;
-    }
+    zmq_client.send(header, message);
 
     std::lock_guard<std::mutex> lock(handler_mutex);
     if (on_register) {
-      startHeartbeatTimer();
       handler_thread = std::thread(&NetworkManager::recvHandler, this);
+      startHeartbeatTimer();
       return true;
+    } else {
+      std::cout << "Register Failed! Retrying..." << std::endl;
+      cv::waitKey(1000);
+      elapsed_time += 1000;
     }
-
-    std::cout << "Register Failed! Retrying..." << std::endl;
-    cv::waitKey(1000);
   }
-
   std::cout << "Connection attempt timed out." << std::endl;
   return false;
 }
@@ -184,7 +168,6 @@ void NetworkManager::recvHandler() {
     } else if (header_str == "data") {
       latest_recv_message = parsed_message;
     }
-
   }
 }
 
