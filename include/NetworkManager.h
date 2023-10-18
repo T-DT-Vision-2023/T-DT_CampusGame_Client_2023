@@ -12,7 +12,7 @@
 #include "tools/core/base64.h"
 #include "tools/network/json_serializer.h"
 #include "tools/network/network_structs.h"
-#include "tools/network/zmq_client.h"
+#include <zmq.hpp>
 #include <mutex>
 #include <nlohmann/json.hpp>
 #include <opencv2/opencv.hpp>
@@ -24,6 +24,13 @@ namespace network {
 
 class NetworkManager {
 private:
+
+
+  zmq::context_t* context;
+  zmq::socket_t* send_socket;
+  zmq::socket_t* recv_socket;
+
+
   int student_id;
   std::string team_name;
   std::string server_address;
@@ -37,9 +44,10 @@ private:
   bool on_game = 0;
   bool close = 0;
 
-  tools::network::ZMQClient zmq_client;
 
   RecvStruct latest_recv_message;
+
+  zmq::message_t *latest_recv_raw_message=new zmq::message_t();
 
 
 public:
@@ -93,6 +101,12 @@ public:
    * @brief   用于接收数据帧的处理线程
    * @return  (void)
    */
+
+  bool get__latest_raw_message();
+  /*!
+   *@brief 用于从消息队列获取最新的数据
+   */
+
   void recvHandler();
 
   /************************************

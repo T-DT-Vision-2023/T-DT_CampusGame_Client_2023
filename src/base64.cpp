@@ -57,7 +57,7 @@ std::string Base64::encode(const char *data, int data_len) {
   return ret;
 }
 
-char *Base64::decode(std::string data, int data_len) {
+char* Base64::decode(std::string data, int data_len) {
   int in_len = data_len;
   int i = 0;
   int j = 0;
