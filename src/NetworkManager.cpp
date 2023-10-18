@@ -259,6 +259,28 @@ bool NetworkManager::get__latest_raw_message() {
 
 }
 
+
+void NetworkManager::sendControlMessage(const SendStruct &send_message) {
+
+
+
+
+  nlohmann::json json_message = send_message;
+
+  json_message["type"] = "control";
+//
+//  std::cout<<"尝试发送控制消息"<<json_message<<std::endl;
+
+  std::string json_str = json_message.dump();
+
+  zmq::message_t message(json_str.c_str(), json_str.size());
+
+  this->send_socket->send(message);
+
+
+}
+
+
 //bool NetworkManager::offlineUser(int timeout) {
 //  std::string header_str = "msg";
 //  zmq::message_t header(header_str.c_str(), header_str.size());
@@ -286,17 +308,7 @@ bool NetworkManager::get__latest_raw_message() {
 //
 
 
-//
-//void NetworkManager::sendControlMessage(const SendStruct &send_message) {
-//  std::string header_str = "data";
-//  zmq::message_t header(header_str.c_str(), header_str.size());
-//
-//  nlohmann::json json_message = send_message;
-//
-//  std::string json_str = json_message.dump();
-//  zmq::message_t message(json_str.c_str(), json_str.size());
-//  zmq_client.send(header, message);
-//}
+
 //
 //void NetworkManager::sendPulse() {
 //  std::string header_str = "msg";
