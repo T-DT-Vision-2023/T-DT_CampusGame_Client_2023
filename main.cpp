@@ -42,7 +42,7 @@ int main() {
 
       int fire = 0;
       // 发送控制信息
-//      net.sendControlMessage(network::SendStruct(0.0, 0.0, fire, 0, 1280, 720));
+      net.sendControlMessage(network::SendStruct(0.0, 0.0, fire, 0, 1280, 720));
       cv::imshow("img", message.img);
       cv::waitKey(10);
 
