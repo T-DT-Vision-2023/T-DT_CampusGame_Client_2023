@@ -44,7 +44,7 @@ int main() {
       // 发送控制信息
 //      net.sendControlMessage(network::SendStruct(0.0, 0.0, fire, 0, 1280, 720));
       cv::imshow("img", message.img);
-      cv::waitKey(0);
+      cv::waitKey(10);
 
       /*******************************************************************************/
       /*                                YOUR CODE ENDS */
@@ -52,7 +52,7 @@ int main() {
 
     } else {
       std::cout << "Get an empty image~" << std::endl;
-      cv::waitKey(10);
+
     }
   }
   return 0;

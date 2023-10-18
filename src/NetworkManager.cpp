@@ -9,6 +9,20 @@
 
 namespace network {
 
+std::vector<uchar> base64_decode(const std::string& encoded_data)
+{
+  // Replace this with your Base64 class instance
+  tools::Base64 base64;
+  char* decoded_data = base64.decode(encoded_data, encoded_data.length());
+
+  // Convert char array to vector
+  std::vector<uchar> result(decoded_data, decoded_data + encoded_data.length());
+
+  // Free the allocated memory
+//  free(decoded_data);
+
+  return result;
+}
 
 NetworkManager::NetworkManager(const std::string &server_ip, int student_id,
                                std::string team_name, int server_port,
@@ -145,7 +159,6 @@ RecvStruct NetworkManager::getLatestRecvMessage() {
       }
 
       iter.operator++();
-
       recv_string.erase(iter,recv_string.end());
 
 
@@ -172,27 +185,21 @@ RecvStruct NetworkManager::getLatestRecvMessage() {
 
       std::string temp =json_message["img"];
 
-      std::cout<<temp<<std::endl;
-      temp.erase(temp.begin(),temp.begin().operator++());
-      temp.erase(temp.end().operator--(),temp.end());
-
-      std::cout<<"the raw img"<<std::endl;
-      std::cout<<temp<<std::endl;
-      std::cout<<temp.data()<<std::endl;
-      std::cout<<"the raw img"<<std::endl;
+;
+//      temp.erase(temp.begin(),temp.begin().operator++());
+//      temp.erase(temp.end().operator--(),temp.end());
 
 
 
-      std::vector<unsigned char> data(temp.begin(), temp.end());
+
+      std::vector<uchar> data= base64_decode(temp);
 
       if (json_message["hasimg"]){
 
-              ret.img   =   cv::imdecode(data,cv::IMREAD_UNCHANGED);
+        ret.img =   cv::imdecode(data,cv::IMREAD_UNCHANGED);
       }
-      std::cout<<"the raw img"<<std::endl;
 
-      cv::imshow("test",ret.img);
-      cv::waitKey(100);
+
 
 
       latest_recv_message=ret;
