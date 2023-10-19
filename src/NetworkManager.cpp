@@ -59,7 +59,7 @@ NetworkManager::~NetworkManager() {
 //  Close();
 }
 
-bool NetworkManager::registerUser(double cnt_time, int timeout) {
+bool NetworkManager::registerUser(float cnt_time, int timeout) {
 
 
     nlohmann::json json_message;
@@ -226,7 +226,7 @@ bool NetworkManager::get__latest_raw_message() {
 
       zmq::recv_result_t  reult = recv_socket->recv(*temp,zmq::recv_flags::dontwait);
 
-      std::cout<<reult.has_value()<<std::endl;
+//      std::cout<<reult.has_value()<<std::endl;
 
       if (!reult.has_value()){
 
@@ -242,7 +242,7 @@ bool NetworkManager::get__latest_raw_message() {
         counter++;
       }
 
-      std::cout<<reult.value()<<std::endl;
+//      std::cout<<reult.value()<<std::endl;
 
       std::string recv_string =  std::string((char *)this->latest_recv_raw_message->data());
 
@@ -269,7 +269,7 @@ void NetworkManager::sendControlMessage(const SendStruct &send_message) {
 
   json_message["type"] = "control";
 //
-//  std::cout<<"尝试发送控制消息"<<json_message<<std::endl;
+  std::cout<<"尝试发送控制消息"<<json_message<<std::endl;
 
   std::string json_str = json_message.dump();
 

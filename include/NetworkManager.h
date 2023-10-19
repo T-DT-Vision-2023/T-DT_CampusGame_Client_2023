@@ -79,7 +79,7 @@ public:
    * @param   [in] timeout (int) 超时时间 单位ms
    * @return  (bool) 注册成功返回true，失败返回false
    */
-  bool registerUser(double cnt_time, int timeout = 5000);
+  bool registerUser(float cnt_time, int timeout = 5000);
 
   /************************************
    * @name    下线视觉程序
