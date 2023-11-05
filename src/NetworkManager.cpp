@@ -176,8 +176,8 @@ RecvStruct NetworkManager::getLatestRecvMessage() {
       ret.yaw=json_message["yaw"];
       ret.pitch=json_message["pitch"];
       ret.time_stamp=json_message["time_stamp"];
-      ret.enemy_hp=json_message["enemy_hp"];
-      ret.my_hp=json_message["my_hp"];
+      ret.red_hp=json_message["red_hp"];
+      ret.blue_hp=json_message["blue_hp"];
       ret.rest_bullets=json_message["rest_bullets"];
       ret.buff_over_time=json_message["buff_over_time"];
       ret.rest_time=json_message["rest_time"];

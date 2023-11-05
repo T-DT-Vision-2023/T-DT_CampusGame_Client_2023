@@ -8,8 +8,8 @@ void adl_serializer<network::RecvStruct>::to_json(json &j, const network::RecvSt
       {"yaw", s.yaw},
       {"pitch", s.pitch},
       {"time_stamp", s.time_stamp},
-      {"enemy_hp", s.enemy_hp},
-      {"my_hp", s.my_hp},
+      {"red_hp", s.red_hp},
+      {"blue_hp", s.blue_hp},
       {"rest_bullets", s.rest_bullets},
       {"rest_time", s.rest_time},
       {"buff_over_time", s.buff_over_time}
@@ -25,8 +25,8 @@ void adl_serializer<network::RecvStruct>::from_json(const json &j, network::Recv
   s.yaw = j["yaw"];
   s.pitch = j["pitch"];
   s.time_stamp = j["time_stamp"];
-  s.enemy_hp = j["enemy_hp"];
-  s.my_hp = j["my_hp"];
+  s.red_hp = j["red_hp"];
+  s.blue_hp = j["blue_hp"];
   s.rest_bullets = j["rest_bullets"];
   s.rest_time = j["rest_time"];
   s.buff_over_time = j["buff_over_time"];

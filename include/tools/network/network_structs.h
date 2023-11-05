@@ -30,8 +30,8 @@ struct RecvStruct {
   float  pitch;                // 当前相机欧拉角的pitch值
   cv::Mat img;                  // 当前视觉相机图像
   float  time_stamp;           // 当前帧信息对应时间戳 单位s
-  float  enemy_hp;             // 敌方当前血量
-  float  my_hp;                // 我方当前血量
+  float  red_hp;             // 敌方当前血量
+  float  blue_hp;                // 我方当前血量
   int     rest_bullets;         // 当前比赛剩余弹量
   int     rest_time;            // 当前比赛剩余时间 单位s
   int     buff_over_time;       // 当前触发大符已用时间 单位s
